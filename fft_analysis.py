@@ -24,6 +24,8 @@ num_samples = 1000  # Number of samples
 t = np.arange(num_samples) / fs  # Time vector
 
 x = a1 * np.sin(2 * np.pi * f1 * t) + a2 * np.sin(2 * np.pi * f2 * t) + a3 * np.sin(2 * np.pi * f3 * t)
+# x = a1 * np.cos(2 * np.pi * f1 * t) + a2 * np.cos(2 * np.pi * f2 * t) + a3 * np.cos(2 * np.pi * f3 * t)
+
 fig, ax = plt.subplots(2, 1, figsize=(10, 8))
 ax[0].plot(t, x)
 ax[0].set_xlabel('Time [s]')
