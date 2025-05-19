@@ -14,12 +14,13 @@ def create_radar_signal(f_carrier, fs, f_x, duration, do_plot=False):
     c = 3e8
     wavelength = c / f_carrier
     radar_signal = np.cos(2 * np.pi * f_carrier * t + 4 * np.pi * x / wavelength)
-    lo_signal = np.cos(2 * np.pi * f_carrier * t)
+    # lo_signal = np.cos(2 * np.pi * f_carrier * t)
+    lo_signal = np.exp(1j * 2 * np.pi * f_carrier * t)
     freqs_radarSig, X_mag_radarSig, peak_radarSig = run_fft(radar_signal, fs)
 
     if do_plot:
         fig,ax = plt.subplots(1,2, figsize=(10,6))
-        ax[0].plot(t, radar_signal)
+        ax[0].plot(t[0:1000], radar_signal[0:1000])
         ax[1].plot(freqs_radarSig, X_mag_radarSig)
         ax[1].plot(freqs_radarSig[peak_radarSig], X_mag_radarSig[peak_radarSig], "x")
         subplot_labels(ax, f'Radar Signal with Modulated Phase at Sample rate {fs/1e9}GHz')
@@ -30,12 +31,13 @@ def create_radar_signal(f_carrier, fs, f_x, duration, do_plot=False):
 
 def mix_signal(radar_signal, lo_signal, t, fs, do_plot=False):
     # Downconvert the radar signal to baseband
-    mixed_signal = radar_signal * lo_signal
+    # mixed_signal = radar_signal * lo_signal
+    mixed_signal = lo_signal * np.conjugate(radar_signal)
     freqs_mxed, X_mag_mxed, peak_mxed = run_fft(mixed_signal, fs)
 
     if do_plot:
         fig,ax = plt.subplots(1,2, figsize=(10,6))
-        ax[0].plot(t, mixed_signal)
+        ax[0].plot(t, np.real(mixed_signal))
         ax[1].plot(freqs_mxed, X_mag_mxed)
         ax[1].plot(freqs_mxed[peak_mxed], X_mag_mxed[peak_mxed], "x")
         print(f"Detected peak:{freqs_mxed[peak_mxed]}Hz")
@@ -80,7 +82,8 @@ def create_aliased_signal(f_carrier, f_aliased, f_x, duration, do_plot=False):
     c = 3e8
     wavelength = c / f_carrier
     radar_signal_aliased = np.cos(2 * np.pi * f_carrier * t + 4 * np.pi * x / wavelength)
-    if_lo_signal = np.cos(2 * np.pi * np.abs(f_carrier - f_aliased) * t)
+    # if_lo_signal = np.cos(2 * np.pi * np.abs(f_carrier - f_aliased) * t)
+    if_lo_signal = np.exp(1j * 2 * np.pi * np.abs(f_carrier - f_aliased) * t)
     freqs_radarSig_aliased, X_mag_radarSig_aliased, peak_radarSig_aliased = run_fft(radar_signal_aliased, f_aliased)
 
     if do_plot:
@@ -95,15 +98,23 @@ def create_aliased_signal(f_carrier, f_aliased, f_x, duration, do_plot=False):
     return radar_signal_aliased, if_lo_signal, t
 
 # User defined parameters
+f_hr = 3
+# If defined for radar perspective
 f_carrier = 2.4e9
 sample_rate = f_carrier * 10
-aliased_sample_rate = 2.8e9
+aliased_sample_rate = 2.400000100e9
 t_duration = 2e-3
-f_hr = 2
+
+# IF defined for ppg perspective
+# f_carrier = 2.4e3
+# sample_rate = f_carrier * 10
+# aliased_sample_rate = 2.5e3
+# t_duration = 20
 
 # Main functions calling
 radar_signal, lo_signal, t_radarSig = create_radar_signal(f_carrier, sample_rate, f_hr, t_duration, do_plot=True)
 # mixed_signal = mix_signal(radar_signal, lo_signal, t_radarSig, sample_rate, do_plot=True)
 # filtered_signal = run_lpf(4, 100, sample_rate, mixed_signal, do_plot=True)
 radar_signal_aliased, if_lo_signal, t_radarSigAliased = create_aliased_signal(f_carrier, aliased_sample_rate, f_hr, t_duration, do_plot=True)
-mixed_aliased_signal = mix_signal(radar_signal_aliased, if_lo_signal, t_radarSigAliased, aliased_sample_rate, do_plot=True)
+# mixed_aliased_signal = mix_signal(radar_signal_aliased, if_lo_signal, t_radarSigAliased, aliased_sample_rate, do_plot=True)
+
